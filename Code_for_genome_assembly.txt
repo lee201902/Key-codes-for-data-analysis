@@ -1,0 +1,32 @@
+# Quality assessment of whole-genome sequencing reads: FastQC 0.11.9 (https://www.bioinformatics.babraham.ac.uk/projects/fastqc/).
+Command lines:
+1. fastqc -o ~/Raw_data_for_Cxiaoi_geno_seq/2942/fastQC/ -t 20 ~/Raw_data_for_Cxiaoi_geno_seq/2942/2942_1.fq.gz_1.fq ~/Raw_data_for_Cxiaoi_geno_seq/2942/2942_2.fq.gz_1.fq
+2. fastqc -o ~/Raw_data_for_Cxiaoi_geno_seq/52996/fastQC/ -t 20 ~/Raw_data_for_Cxiaoi_geno_seq/52996/52996_W413_R1.fq.gz ~/Raw_data_for_Cxiaoi_geno_seq/52996/52996_W413_R2.fq.gz
+
+# Trimming the adapter sequences and low-quality bases (phred score less than 25): Trimmomatic 0.32 (https://github.com/usadellab/Trimmomatic).
+Command lines:
+1. trimmomatic PE -phred33 -threads 20 -quiet ~/Raw_data_for_Cxiaoi_geno_seq/2942/2942_1.fq.gz_1.fq ~/Raw_data_for_Cxiaoi_geno_seq/2942/2942_2.fq.gz_1.fq \ 
+output_2942_1_paired.fq.gz output_2942_1_unpaired.fq.gz output_2942_2_paired.fq.gz output_2942_2_unpaired.fq.gz \ 
+ILLUMINACLIP:TruSeq3-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:25
+2. trimmomatic PE -phred33 -threads 20 -quiet ~/Raw_data_for_Cxiaoi_geno_seq/52996/52996_W413_R1.fq.gz ~/Raw_data_for_Cxiaoi_geno_seq/52996/52996_W413_R2.fq.gz \ 
+output_52996_1_paired.fq.gz output_52996_1_unpaired.fq.gz output_52996_2_paired.fq.gz output_52996_2_unpaired.fq.gz \ 
+ILLUMINACLIP:TruSeq3-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:25
+
+# Genome assembly: CLC Genomics Workbench 11 (https://digitalinsights.qiagen.com/products-overview/plugins/), SPAdes 3.1 (http://cab.spbu.ru/software/spades/)
+1. A tutorial on genome assembly using visual CLC Genomics Workbench 11 is detailed at \ 
+https://resources.qiagenbioinformatics.com/manuals/clcgenomicsworkbench/1101/index.php?manual=Introduction_CLC_Genomics_Workbench.html.
+2. Command lines using SPAdes 3.1:
+(1) spades.py --pe1-1 ~/Raw_data_for_Cxiaoi_geno_seq/2942/output_2942_1_paired.fq.gz --pe1-2 ~/Raw_data_for_Cxiaoi_geno_seq/2942/output_2942_2_paired.fq.gz \ 
+-o ~/Raw_data_for_Cxiaoi_geno_seq/2942/spades_assemby_2942
+(2)spades.py --pe1-1 ~/Raw_data_for_Cxiaoi_geno_seq/52996/output_52996_1_paired.fq.gz --pe1-2 ~/Raw_data_for_Cxiaoi_geno_seq/52996/output_52996_2_paired.fq.gz \ 
+-o ~/Raw_data_for_Cxiaoi_geno_seq/52996/spades_assemby_52996
+
+# Removal of contaminant configs: searching the sequences against the NCBI nt database (https://ftp.ncbi.nlm.nih.gov/blast/db/v5/) \ 
+using blastn v2.2.31 (https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+)
+Command lines:
+
+1. makeblastdb -in ~/genome_assembly/Cxiaoi_2942.fasta (or Cxiaoi_52996.fasta) -parse_seqids -dbtype nucl
+2. blastn -db ~/NCBI_nt_database_v5/nt -query ~/genome_assembly/Cxiaoi_2942.fasta (or Cxiaoi_52996.fasta) -outfmt 10 -num_alignments 5 -max_hsps 1 \ 
+-out ~/genome_assembly/Cxiaoi_2942_blast.out (or Cxiaoi_52996_blast.out.fasta)
+3. Removal of the non-Cryptosporidium contigs using excel and visual mauve (https://darlinglab.org/mauve/mauve.html).
+4. The final draft genome was obtained after merging and de-duplication of the above cleaned contigs.
