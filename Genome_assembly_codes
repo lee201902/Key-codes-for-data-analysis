@@ -1,1 +1,14 @@
+# Quality assessment of whole-genome sequencing reads using FastQC 0.11.9 (https://www.bioinformatics.babraham.ac.uk/projects/fastqc/).
+Command lines:
+1. fastqc -o ~/Raw_data_for_Cxiaoi_geno_seq/2942/fastQC/ -t 20 ~/Raw_data_for_Cxiaoi_geno_seq/2942/2942_1.fq.gz_1.fq ~/Raw_data_for_Cxiaoi_geno_seq/2942/2942_2.fq.gz_1.fq
+2. fastqc -o ~/Raw_data_for_Cxiaoi_geno_seq/52996/fastQC/ -t 20 ~/Raw_data_for_Cxiaoi_geno_seq/52996/52996_W413_R1.fq.gz ~/Raw_data_for_Cxiaoi_geno_seq/52996/52996_W413_R2.fq.gz
 
+# Trimming the adapter sequences and low-quality bases (phred score less than 25) using Trimmomatic 0.32 (https://github.com/usadellab/Trimmomatic).
+1. trimmomatic PE -phred33 -threads 20 -quiet ~/Raw_data_for_Cxiaoi_geno_seq/2942/2942_1.fq.gz_1.fq ~/Raw_data_for_Cxiaoi_geno_seq/2942/2942_2.fq.gz_1.fq \ 
+output_2942_1_paired.fq.gz output_2942_1_unpaired.fq.gz output_2942_2_paired.fq.gz output_2942_2_unpaired.fq.gz \ 
+ILLUMINACLIP:TruSeq3-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15
+2. trimmomatic PE -phred33 -threads 20 -quiet ~/Raw_data_for_Cxiaoi_geno_seq/52996/52996_W413_R1.fq.gz ~/Raw_data_for_Cxiaoi_geno_seq/52996/52996_W413_R2.fq.gz \ 
+output_52996_1_paired.fq.gz output_52996_1_unpaired.fq.gz output_52996_2_paired.fq.gz output_52996_2_unpaired.fq.gz \ 
+ILLUMINACLIP:TruSeq3-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15
+
+#
