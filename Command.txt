@@ -1,0 +1,4 @@
+nohup autoAugTrain.pl \
+--genome=CryptoDB-53_Candersoni30847_Genome.fasta \
+--trainingset=CryptoDB-53_Candersoni30847.gff \
+--species=Cand & 
