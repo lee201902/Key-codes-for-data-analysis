@@ -1,0 +1,32 @@
+# Gene functional annotation: BLASTP v2.2.31(https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.2.31/) .
+Command lines:
+1. $ makeblastdb -in ~/blast+/nr (~/Crypto_all_genome/all_crypto_anpro.fasta) -dbtype prot -title nr-record -parse_seqids -logfile nr-record.log \
+-out /nr_db_v5/nr_v5 (/nr_db_v5/all_crypto_anpro)
+2. $ blastp -query ~/genome_assembly/2942 (or 52996)/Cxiaoi_2942_cleaned_pro.fasta (or Cxiaoi_52996_cleaned_pro.fasta) \ 
+-out ~/genome_assembly/2942 (or 52996)/*_cleaned_pro_blast_to_NCBI_NR (cleaned_pro_blast_to_cry_anpro).blast -db /nr_db_v5/nr_v5 -evalue 1e-5 -outfmt 6 \
+-num_threads 20 &
+3. $ Filtering the best subject for each query from the blatp results using JCVI: https://github.com/tanghaibao/jcvi.
+Command lines:
+(1) conda create -y -c bioconda -n JCVI jcvi
+$ conda activate JCVI
+$ conda install -c bioconda bedtools
+$ conda install seqkit emboss
+$ conda install last
+(2) $ python -m ~/genome_assembly/2942 (or 52996)/*_cleaned_pro_blast_to_NCBI_NR(cleaned_pro_blast_to_cry_anpro)_jcvi.best1.blast best -n 1 \
+~/genome_assembly/2942 (or 52996)/*_cleaned_pro_blast_to_NCBI_NR(cleaned_pro_blast_to_cry_anpro).blast
+
+# Signal peptide prediction: SignalP 5.0 (https://services.healthtech.dtu.dk/service.php?SignalP-5.0)
+Command lines: 
+$ signalp -batch 30000 -org euk -fasta ~/cry_pro.fasta (each annotated species) -gff3 -mature
+
+# Transmembrane domain prediction: TMHMM 2.0 (https://services.healthtech.dtu.dk/service.php?TMHMM-2.0)
+Command lines: 
+
+# Transmembrane domain prediction: TMHMM 2.0 (https://services.healthtech.dtu.dk/service.php?TMHMM-2.0)
+Command lines: 
+$ tmhmm ~/cry_pro.fasta (each annotated species) >~/cry_pro (each annotated species).TMHMM
+
+# Annotation the metabolic enzymes and functional proteins using Pfam (http://pfam.xfam.org/).
+$ Command lines:  pfam_scan.pl -fasta ~/cry_pro.fasta (each annotated species)  -dir ~/hmmer-3.2/lib -outfile \
+~/cry_pro_pfam_scan.out (each annotated species) -cpu 10
+
