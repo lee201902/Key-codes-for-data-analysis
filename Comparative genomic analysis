@@ -1,0 +1,9 @@
+# Average nucleotide identity calculation: FastANI (https://github.com/ParBLiSS/FastANI)
+Command lines:
+$ fastANI --ql ~/Crypto_all_genome/Crypto_all_genome_list.txt --rl ~/Crypto_all_genome/Crypto_all_genome_list.txt -o ~/Crypto_all_genome/Crypto_all_genome_fastANI.txt
+
+# Orthology analysis of protein-encoding genes: OrthoFinder v2.3.8 (https://github.com/davidemms/OrthoFinder), OrthoVenn3 (https://orthovenn3.bioinfotoolkits.net/start/db)
+1. OrthoVenn3 is a visualization software that is supplied with protein files to run.
+2. orthofinder v2.3.8:
+(1) Modify -evalue to 0.00000001 in the parameter file config.json.
+(2) $ orthofinder -f ~/Crypto_all_genome/Cry_all_anpro_file -S blast -M msa -T fasttree -t 20 
