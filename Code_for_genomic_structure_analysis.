@@ -1,0 +1,72 @@
+# Assessment of the genome completeness: BUSCO 4.0.6 (https://busco.ezlab.org/).
+Command lines: 
+busco -i ~/genome_assembly/2942 (or 52996)/Cxiaoi_2942_cleaned.fasta (or Cxiaoi_52996_cleaned.fasta) -r -o \ 
+Cxiaoi_2942_cleaned (or Cxiaoi_52996_cleaned) --out_path ~/genome_assembly/busco_for_Cxiaoi_genome \ 
+--lineage_dataset ~/genome_assembly/apicomplexa_odb10.2020-09-10 -m geno -c 20 -f --offline
+
+# Quality assessment for genome assemblies: QUAST (https://quast.sourceforge.net/).
+Command lines: 
+quast.py ~/genome_assembly/Cxiaoi_2942_cleaned.fasta (or Cxiaoi_52996_cleaned.fasta) -o ~/genome_assembly/2942 (or 52996)/quast_out -t 20
+
+# Predicting of Transfer RNA (tRNA) genes: ARAGORN 1.2 (http://www.ansikte.se/ARAGORN/), tRNAscan-SE 2.0 (https://www.psc.edu/resources/software/trnascan-se/).
+Command lines: 
+1. ARAGORN 1.2 is an online server.
+
+2. tRNAscan-SE 2.0: tRNAscan-SE -E -o ~/genome_assembly/2942 (or 52996)/*_tRNA.out -f ~/genome_assembly/2942 (or 52996)/*_tRNA.ss \ 
+-m ~/genome_assembly/2942 (or 52996)/*_tRNA.stats ~/genome_assembly/2942 (or 52996)/Cxiaoi_2942_cleaned.fasta (or Cxiaoi_52996_cleaned.fasta)
+
+# Predicting of ribosomal RNA (rRNA) genes: RNAmmer 1.2 (https://services.healthtech.dtu.dk/service.php?RNAmmer-1.2) 
+Command lines: 
+rnammer -S euk -multi -f ~/genome_assembly/2942 (or 52996)/*_rRNA.fasta -h ~/genome_assembly/2942 (or 52996)/*_rRNA.hmmreport \ 
+-x ~/genome_assembly/2942 (or 52996)/*_rRNA.xml -gff ~/genome_assembly/2942 (or 52996)/*_rRNA.gff \ 
+~/genome_assembly/2942 (or 52996)/Cxiaoi_2942_cleaned.fasta (or Cxiaoi_52996_cleaned.fasta)
+
+# Gene prediction: AUGUSTUS v3.2.1 (https://bioinf.uni-greifswald.de/augustus/), Geneid 1.4 (https://genome.crg.cat/software/geneid/), \ 
+GeneMark-ES 4.0 (http://exon.gatech.edu/GeneMark/), GeMoMa 2.3 (http://www.jstacs.de/index.php/GeMoMa). 
+Command lines: 
+1. AUGUSTUS v3.2.1:
+(1) Training: utoAugTrain.pl --genome=~/genome_assembly/CryptoDB-50_CparvumIOWA-ATCC_Genome.fasta \ 
+--trainingset=CryptoDB-50_CparvumIOWA-ATCC_Genome.gff --species=Cpar-ATCC
+(2) Gene prediction: augustus --strand=both --genemode=partial \
+--singlestrand=false --protein=on --introns=on --start=on --stop=on \
+--cds=on --codingseq=on --alternatives-from-evidence=true --gff3=on \
+--outfile=Contig_44884_FelisOnly.gff --species=Cpar-ATCC \
+~/genome_assembly/2942 (or 52996)/Cxiaoi_2942_cleaned.fasta (or Cxiaoi_52996_cleaned.fasta)
+(3) Covert the generated gene.gff file to EVM.gff file for EVidenceModeler v1.1.0: augustus_GFF3_to_EVM_GFF3.pl \ 
+~/genome_assembly/2942 (or 52996)/*_aug.gff > ~/genome_assembly/2942 (or 52996)/aug_gene_for_EVM.gff3
+
+2. Geneid 1.4:
+Gene prediction: geneid -v3P ~/geneid/param/C.parvum.geneid.optimized.param ~/genome_assembly/2942 (or 52996)/Cxiaoi_2942_cleaned.fasta (or Cxiaoi_52996_cleaned.fasta) \
+> ~/genome_assembly/2942 (or 52996)/*_geneid_for_EVM.gff3
+
+3. GeneMark-ES 4.0:
+(1) Gene prediction: gmes_petap.pl --ES --cores 10 --sequence ~/genome_assembly/2942 (or 52996)/Cxiaoi_2942_cleaned.fasta (or Cxiaoi_52996_cleaned.fasta)
+(2) Covert the generated gene.gff file to EVM.gff file for EVidenceModeler v1.1.0: gffread *_genemark.gtf -o- > *_genemark_for_EVM.gff3
+
+4. GeMoMa 2.3: 
+(1) java -jar ~/gemoma/GeMoMa-2.3.jar CLI GeMoMaPipeline threads=20 AnnotationFinalizer.r=NO p=false o=true tblastn=true \
+t=~/genome_assembly/2942 (or 52996)/Cxiaoi_2942_cleaned.fasta (or Cxiaoi_52996_cleaned.fasta) outdir=~/genome_assembly/2942 (or 52996)/ \
+a=~/genome_assembly/CryptoDB-50_CparvumIOWA-ATCC_Genome.gff g=~/genome_assembly/CryptoDB-50_CparvumIOWA-ATCC_Genome.fasta
+(2)Covert the generated gene.gff file to EVM.gff file for EVidenceModeler v1.1.0: GeMoMa_gff_to_gff3.pl ~/genome_assembly/2942 (or 52996)/*_Gemoma.gff > \ 
+~/genome_assembly/2942 (or 52996)/gemoma_for_EVM.gff3
+
+#  Generate a final gene set by combining the prediction results of the four programs: EVidenceModeler v1.1.0 (https://evidencemodeler.github.io/).
+1. Set the weight for different gene sets predicted by the four software: 
+BINITIO_PREDICTION	Augustus	1
+ABINITIO_PREDICTION	geneid_v1.4	1
+ABINITIO_PREDICTION	GeneMark.hmm	1
+OTHER_PREDICTION	GeMoMa	4
+2. cp *EVM.gff3 to ~/EVidenceModeler v1.1.0/EVM_for_Cxiaoi
+2. cat ./*EVM.gff3  > all_gene_predictions_EVM.gff3
+3. partition_EVM_inputs.pl --genome ~/genome_assembly/2942 (or 52996)/Cxiaoi_2942_cleaned.fasta (or Cxiaoi_52996_cleaned.fasta) \
+ --gene_predictions all_gene_predictions_EVM.gff3 --segmentSize 100000 --overlapSize 5000 --partition_listing partitions_list.out
+4. write_EVM_commands.pl --genome ~/genome_assembly/2942 (or 52996)/Cxiaoi_2942_cleaned.fasta (or Cxiaoi_52996_cleaned.fasta) \
+ --weights ~/EVidenceModeler v1.1.0/EVM_for_Cxiaoi/weights.txt \--gene_predictions ll_gene_predictions_EVM.gff3 --output_file_name evm.out\
+--partitions partitions_list.out >  commands.list
+5. execute_EVM_commands.pl commands.list | tee run.log
+6. recombine_EVM_partial_outputs.pl --partitions partitions_list.out --output_file_name evm.out
+7. convert_EVM_outputs_to_GFF3.pl  --partitions partitions_list.out --output evm.out \
+--genome ~/genome_assembly/2942 (or 52996)/Cxiaoi_2942_cleaned.fasta (or Cxiaoi_52996_cleaned.fasta)
+8. find. -regex ".*evm.out.gff3" -exec cat {} \; > Cxiaoi_EVM_all_gff3
+9. All the predicted genes were manually examined to avoid false predictions. \
+These include repeat prediction, single gene to two genes due to the contig fragmentation.
