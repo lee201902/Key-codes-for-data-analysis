@@ -1,0 +1,40 @@
+# Single nucleotide variants (SNVs) calculation: Bowtie 2.3.5.1 (https://bowtie-bio.sourceforge.net/bowtie2/),  \
+samtools 1.14 (https://github.com/samtools/samtools/tree/1.14), \
+Bcftools 1.10.2 (https://samtools.github.io/bcftools/), VCFtools (https://vcftools.sourceforge.net/).
+
+1. Whole-genome sequencing reads mapped to the reference genome using Bowtie 2.3.5.1: 
+Command lines:
+(1) $ bowtie2-build ~/genome_assembly/52996 (or /Cbovis45015)/Cxiaoi_52996_cleaned_genome.fasta (or Cbovis45015_genome.fasta) \
+Cxiao52996_Genome (or Cbovis45015_Genome)
+(2) $ bowtie2 -p 20 -x Cxiao52996_Genome (or Cbovis45015_Genome) -1 ~/*_1_paired.fq.gz -2 ~/*_2_paired.fq.gz --sensitive-local -5 5 -3 5 \
+-S Cxiaoi2942_mapped_to_52996.sam (or Cxiaoi52996_mapped_to_2942.sam)
+
+2. Convert the sam file to a filtered and sorted file using samtools 1.14
+Command lines:
+(1) $ samtools view -b Cxiaoi2942_mapped_to_52996.sam (or Cxiaoi52996_mapped_to_2942.sam) -o \
+Cxiaoi2942_mapped_to_52996.bam (or Cxiaoi52996_mapped_to_2942.bam) -@ 20
+(2) $ samtools sort -O bam -@ 20 Cxiaoi2942_mapped_to_52996 (or Cxiaoi52996_mapped_to_2942).bam \
+-o Cxiaoi2942_mapped_to_52996 (or Cxiaoi52996_mapped_to_2942)_sorted.bam
+
+3. Single nucleotide variants (SNVs) generation using bcftools:
+Command lines:
+(1) $ bcftools mpileup -d 500 -Ou -a FORMAT/DP,FORMAT/AD -f ~/genome_assembly/52996 (or /Cbovis45015)/Cxiaoi_52996_cleaned_genome.fasta \
+Cxiaoi2942_mapped_to_52996 (or Cxiaoi52996_mapped_to_2942)_sorted.bam | bcftools call --threads 8 --ploidy 1 -Ov -mv \
+-o Cxiaoi2942_mapped_to_52996 (or Cxiaoi52996_mapped_to_2942)_sorted.vcf
+(2) $ bcftools filter -i "QUAL>=30 && AVG(FORMAT/DP)>10 && MQ>=30 && FMT/GT='1'" \
+Cxiaoi2942_mapped_to_52996 (or Cxiaoi52996_mapped_to_2942)_sorted.vcf -Ov -o Cxiaoi2942_mapped_to_52996 (or Cxiaoi52996_mapped_to_2942)_sorted_filter.vcf
+(3) $ bcftools view -i "type='snps'" Cxiaoi2942_mapped_to_52996 (or Cxiaoi52996_mapped_to_2942)_sorted_filter.vcf -Ov \
+-o Cxiaoi2942_mapped_to_52996 (or Cxiaoi52996_mapped_to_2942)_sorted_bcftools_final_snp.vcf
+
+4. SNV count using VCFtools:
+Command lines:
+ $ vcftools --vcf Cxiaoi2942_mapped_to_52996 (or Cxiaoi52996_mapped_to_2942)_sorted_bcftools_final_snp.vcf --SNPdensity 1000 \
+--out Cxiaoi2942_mapped_to_52996 (or Cxiaoi52996_mapped_to_2942)_sorted_bcftools_snp_count.xlsx
+# Single nucleotide variants (SNVs) annotation: SnpEff 5.1 (https://pcingola.github.io/SnpEff/) 
+
+5. SNP annotation using SnpEff 5.1 (https://pcingola.github.io/SnpEff/)
+Command lines: 
+(1). Create 2 folders in the ~/snpEff_latest_core/snpEff/data directory: a. genomes: add *_genome.fasta; Cxiaoi_52996 (or Cbovis45015); \
+add the corresponding annotated file and rename it to genes.gff.
+(2). $ java -jar snpEff.jar -v Cxiaoi_52996 (or Cbovis45015)  Cxiaoi2942_mapped_to_52996 (or Cxiaoi52996_mapped_to_2942)_sorted_bcftools_final_snp.vcf \
+> Cxiaoi2942_mapped_to_52996 (or Cxiaoi52996_mapped_to_2942)_sorted_bcftools_final_snp_annotated.vcf
