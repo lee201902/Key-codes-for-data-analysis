@@ -1,7 +1,7 @@
 # Verification of species-specific and missing genes in C. xiaoi genomes: Bowtie 2.3.5.1 (https://bowtie-bio.sourceforge.net/bowtie2/),  \
 samtools 1.14 (https://github.com/samtools/samtools/tree/1.14).
 
-1. Whole-genome sequencing reads mapped to the reference gene using Bowtie 2.3.5.1: 
+1. Whole-genome sequencing reads mapped to the reference gene using Bowtie 2.3.5.1
 Command lines:
 (1) $ bowtie2-build ~/Cxiaoi-species-specific-gene.fasta (or miss_orthologous_gene_Cparvum.fasta) \
 species-specific-gene (or miss_orthologous_gene)
@@ -10,9 +10,13 @@ species-specific-gene (or miss_orthologous_gene)
 
 2. Convert the sam file to a filtered and sorted file using samtools 1.14
 Command lines:
-(1) $ samtools view -bspecies-specific-gene.sam (or miss_orthologous_gene.sam) -o \
+(1) $ samtools view -b species-specific-gene.sam (or miss_orthologous_gene.sam) -o \
 species-specific-gene.bam (or miss_orthologous_gene.bam) -@ 20
 (2) $ samtools sort -O bam -@ 20 species-specific-gene.bam (or miss_orthologous_gene.bam) \
 -o species-specific-gene (or miss_orthologous_gene)_sorted.bam
 
-3. Visualization of the read mapping results using IGV 2.1.5 (https://data.broadinstitute.org/igv/projects/downloads/2.15/).
+3. Visualization of the read mapping results using IGV 2.1.5 (https://data.broadinstitute.org/igv/projects/downloads/2.15/)
+
+4. Verification of missing genes in C. xiaoi genomes at amino acid sequence level
+(1) makeblastdb -in ~/Cxiaoi-2942.fasta (or Cxiaoi-52996.fasta) -dbtype nucl -parse_seqids -out 2942 (or 52996)-genome
+(2) tblastn -db 2942 (or 52996)-genome -query Cxiao-end-loss-gene.fasta -evalue le-8 -outfmt 7
