@@ -1,0 +1,18 @@
+# Verification of species-specific and missing genes in C. xiaoi genomes: Bowtie 2.3.5.1 (https://bowtie-bio.sourceforge.net/bowtie2/),  \
+samtools 1.14 (https://github.com/samtools/samtools/tree/1.14).
+
+1. Whole-genome sequencing reads mapped to the reference gene using Bowtie 2.3.5.1: 
+Command lines:
+(1) $ bowtie2-build ~/Cxiaoi-species-specific-gene.fasta (or miss_orthologous_gene_Cparvum.fasta) \
+species-specific-gene (or miss_orthologous_gene)
+(2) $ bowtie2 -p 20 -x species-specific-gene (or miss_orthologous_gene) -1 ~/*_1_paired.fq.gz -2 ~/*_2_paired.fq.gz --sensitive-local -5 5 -3 5 \
+-S species-specific-gene.sam (or miss_orthologous_gene.sam)
+
+2. Convert the sam file to a filtered and sorted file using samtools 1.14
+Command lines:
+(1) $ samtools view -bspecies-specific-gene.sam (or miss_orthologous_gene.sam) -o \
+species-specific-gene.bam (or miss_orthologous_gene.bam) -@ 20
+(2) $ samtools sort -O bam -@ 20 species-specific-gene.bam (or miss_orthologous_gene.bam) \
+-o species-specific-gene (or miss_orthologous_gene)_sorted.bam
+
+3. Visualization of the read mapping results using IGV 2.1.5 (https://data.broadinstitute.org/igv/projects/downloads/2.15/).
